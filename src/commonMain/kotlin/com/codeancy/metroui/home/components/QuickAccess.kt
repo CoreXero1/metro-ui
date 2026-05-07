@@ -58,6 +58,7 @@ enum class QuickAccess {
 @Composable
 fun QuickAccess(
     modifier: Modifier = Modifier,
+    visibleItems: Set<QuickAccess> = QuickAccess.entries.toSet(),
     onClick: (QuickAccess) -> Unit
 ) {
 
@@ -94,44 +95,50 @@ fun QuickAccess(
                     .fillMaxHeight()
             )
 
-            QuickAccessIcon(
-                imageVector = vectorResource(Res.drawable.book_ticket),
-                title = stringResource(Res.string.book_ticket),
-                iconBackgroundColor = bookTicketColors.first,
-                iconTintColor = bookTicketColors.second,
-                onClick = {
-                    onClick(QuickAccess.BOOK_TICKET)
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            )
+            if (QuickAccess.BOOK_TICKET in visibleItems) {
+                QuickAccessIcon(
+                    imageVector = vectorResource(Res.drawable.book_ticket),
+                    title = stringResource(Res.string.book_ticket),
+                    iconBackgroundColor = bookTicketColors.first,
+                    iconTintColor = bookTicketColors.second,
+                    onClick = {
+                        onClick(QuickAccess.BOOK_TICKET)
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                )
+            }
 
-            QuickAccessIcon(
-                imageVector = vectorResource(Res.drawable.nearest_metro),
-                title = stringResource(Res.string.nearest_metro),
-                iconBackgroundColor = nearestMetroColors.first,
-                iconTintColor = nearestMetroColors.second,
-                onClick = {
-                    onClick(QuickAccess.NearestMetro)
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            )
+            if (QuickAccess.NearestMetro in visibleItems) {
+                QuickAccessIcon(
+                    imageVector = vectorResource(Res.drawable.nearest_metro),
+                    title = stringResource(Res.string.nearest_metro),
+                    iconBackgroundColor = nearestMetroColors.first,
+                    iconTintColor = nearestMetroColors.second,
+                    onClick = {
+                        onClick(QuickAccess.NearestMetro)
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                )
+            }
 
-            QuickAccessIcon(
-                imageVector = vectorResource(Res.drawable.timings),
-                title = stringResource(Res.string.timings),
-                iconBackgroundColor = timingsColors.first,
-                iconTintColor = timingsColors.second,
-                onClick = {
-                    onClick(QuickAccess.Timings)
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            )
+            if (QuickAccess.Timings in visibleItems) {
+                QuickAccessIcon(
+                    imageVector = vectorResource(Res.drawable.timings),
+                    title = stringResource(Res.string.timings),
+                    iconBackgroundColor = timingsColors.first,
+                    iconTintColor = timingsColors.second,
+                    onClick = {
+                        onClick(QuickAccess.Timings)
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                )
+            }
         }
     }
 }

@@ -57,6 +57,9 @@ fun HomeScreen(
 
         HomeScreenHeader(
             title = MetroConfig.appTitle,
+            selectedCity = MetroConfig.selectedCity,
+            supportedCities = MetroConfig.supportedCities,
+            onCitySelected = MetroConfig.onCitySelected,
             modifier = Modifier
                 .fillMaxWidth(),
             onPremiumClicked = {
@@ -114,7 +117,13 @@ fun HomeScreen(
         QuickAccess(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 12.dp),
+            visibleItems = buildSet {
+                add(QuickAccess.Map)
+                if (MetroConfig.showBookTicket) add(QuickAccess.BOOK_TICKET)
+                if (MetroConfig.showNearestMetro) add(QuickAccess.NearestMetro)
+                if (MetroConfig.showTimings) add(QuickAccess.Timings)
+            }
         ) { quickAccess ->
             when (quickAccess) {
                 QuickAccess.Map -> {

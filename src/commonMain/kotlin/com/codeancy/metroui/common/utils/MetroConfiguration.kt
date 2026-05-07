@@ -12,7 +12,13 @@ data class MetroConfiguration(
     val mapDrawableResource: MapDrawableResource,
     val appName: String,
     val appVersion: String,
-    val interstitialAdController: InterstitialAdController?
+    val interstitialAdController: InterstitialAdController? = null,
+    val supportedCities: List<String> = emptyList(),
+    val selectedCity: String = "",
+    val onCitySelected: (String) -> Unit = {},
+    val showBookTicket: Boolean = true,
+    val showNearestMetro: Boolean = true,
+    val showTimings: Boolean = true
 )
 
 val LocalMetroConfiguration =
