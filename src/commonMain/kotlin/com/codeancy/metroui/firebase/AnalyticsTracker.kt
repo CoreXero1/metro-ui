@@ -24,6 +24,9 @@ object AnalyticsEvents {
     const val LIVE_LOCATION_STARTED = "live_location_started"
     const val LIVE_LOCATION_STOPPED = "live_location_stopped"
     const val PREMIUM = "premium"
+    const val ROUTE_SHARE_CLICKED = "route_share_clicked"
+    const val ROUTE_VIEW_INTERCHANGE = "route_view_interchange"
+    const val ROUTE_VIEW_STATION_LIST = "route_view_station_list"
 
 }
 
@@ -36,6 +39,10 @@ object AnalyticsParams {
     const val SOURCE_NAME = "source_name"
     const val DEST_NAME = "dest_name"
     const val TIME = "time"
+    const val VIEW_TYPE = "view_type"
+    const val STATIONS = "stations"
+    const val INTERCHANGES = "interchanges"
+    const val FARE = "fare"
 }
 
 enum class ScreenName {

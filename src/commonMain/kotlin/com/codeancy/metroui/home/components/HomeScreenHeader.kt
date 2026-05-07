@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.corexero.dhan_tantra.sdk.RevenueCatManager
+import com.codeancy.metroui.common.utils.MetroConfig
 import indianmetro.metroui.generated.resources.Res
 import indianmetro.metroui.generated.resources.ic_premium
 import indianmetro.metroui.generated.resources.metro
@@ -52,9 +52,8 @@ fun HomeScreenHeader(
     modifier: Modifier = Modifier,
     onPremiumClicked: () -> Unit = {}
 ) {
-
     var isCityMenuExpanded by remember { mutableStateOf(false) }
-    val isPremiumActive by RevenueCatManager.premiumActive
+
     Row(
         modifier = modifier
             .background(MaterialTheme.colorScheme.primary)
@@ -149,7 +148,7 @@ fun HomeScreenHeader(
             }
         }
 
-        if (!isPremiumActive) {
+        if (!MetroConfig.isPremiumUser) {
             Icon(
                 imageVector = vectorResource(Res.drawable.ic_premium),
                 contentDescription = null,

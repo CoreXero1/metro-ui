@@ -13,6 +13,7 @@ data class MetroConfiguration(
     val appName: String,
     val appVersion: String,
     val interstitialAdController: InterstitialAdController? = null,
+    val isPremiumUser: Boolean = false,
     val supportedCities: List<String> = emptyList(),
     val selectedCity: String = "",
     val onCitySelected: (String) -> Unit = {},

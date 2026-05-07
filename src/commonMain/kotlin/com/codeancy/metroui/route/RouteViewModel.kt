@@ -40,11 +40,17 @@ import org.corexero.sutradhar.remoteConfig.FirebaseRemoteConfig
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
+private data object RouteLiveLocationConfigKey : org.corexero.sutradhar.remoteConfig.ConfigKey<Boolean>(
+    key = "LIVE_LOCATION",
+    defaultValue = false
+)
+
 @Stable
 data class RoutScreenState(
     val showProgress: Boolean = true,
     val routeResultUi: RouteResultUi? = null,
     val showInAppReview: Boolean = false,
+    val showBookTicketTooltip: Boolean = false,
     val hasInitialized: Boolean = false,
     val isLiveLocationEnabled: Boolean = false,
     val showError: Boolean = false,
@@ -87,9 +93,15 @@ class RouteViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val providerState: StateFlow<LocationProviderStatus?> =
         state
-            .map { if (it.isLiveLocationEnabled && it.isInterChangeFormatOpen) it.routeResultUi else null }
+            .map {
+                if (isLiveLocationFeatureEnabled() && it.isLiveLocationEnabled && it.isInterChangeFormatOpen) {
+                    it.routeResultUi
+                } else {
+                    null
+                }
+            }
             .flatMapLatest<RouteResultUi?, LocationProviderStatus?> { routeResultUi ->
-                routeResultUi?.let { routeResultUi ->
+                routeResultUi?.let {
                     locationRepository.getLocationAccess()
                 } ?: flow { emit(null) }
             }
@@ -97,14 +109,21 @@ class RouteViewModel(
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(5000),
-                LocationProviderStatus.NoProviderEnabled
+                null
             )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val liveLocationState: StateFlow<LiveLocationUi?> =
         providerState.combine(state) { providerState, state ->
             when (providerState) {
-                LocationProviderStatus.ProviderEnabled -> state.routeResultUi
+                LocationProviderStatus.ProviderEnabled -> {
+                    if (isLiveLocationFeatureEnabled() && state.isLiveLocationEnabled && state.isInterChangeFormatOpen) {
+                        state.routeResultUi
+                    } else {
+                        null
+                    }
+                }
+
                 else -> null
             }
         }
@@ -115,17 +134,20 @@ class RouteViewModel(
                         .map { liveLocation ->
                             liveLocation.toLiveLocationUi()
                         }
+                        .onStart {
+                            emit(LiveLocationUi.Initializing)
+                        }
                 } ?: flow { emit(null) }
             }
             .flowOn(Dispatchers.Default)
-            .onStart {
-                emit(LiveLocationUi.Initializing)
-            }
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(5000),
-                LiveLocationUi.Initializing
+                null
             )
+
+    private fun isLiveLocationFeatureEnabled(): Boolean =
+        FirebaseRemoteConfig.getBoolean(RouteLiveLocationConfigKey)
 
     private fun showNotInsideMetroError() {
         _state.update { currentState ->
@@ -183,13 +205,20 @@ class RouteViewModel(
             FirebaseAnalyticsTracker.logEvent(
                 eventName = AnalyticsEvents.ROUTE_LOAD_TIME,
                 screenName = ScreenName.ROUTE_SCREEN,
-                eventParams = mapOf(
-                    AnalyticsParams.SOURCE_ID to routeScreenRoute.sourceId,
-
-                    AnalyticsParams.DEST_ID to routeScreenRoute.destId,
-                    AnalyticsParams.TIME to (Clock.System.now() - startTime) / 1000
-                )
+                eventParams = routeAnalyticsParams(
+                    viewType = if (_state.value.isInterChangeFormatOpen) {
+                        ROUTE_VIEW_INTERCHANGE
+                    } else {
+                        ROUTE_VIEW_STATION_LIST
+                    }
+                ) + mapOf(AnalyticsParams.TIME to (Clock.System.now() - startTime) / 1000)
             )
+
+            val tooltipCount = dataStoreManager.getFirst(DataStoreKey.BookTicketTooltipShowCount)
+            if (tooltipCount < 3) {
+                _state.update { it.copy(showBookTicketTooltip = true) }
+                dataStoreManager.put(DataStoreKey.BookTicketTooltipShowCount, tooltipCount + 1)
+            }
 
             //If app review is not show, show the app review
             if (FirebaseRemoteConfig.getBoolean(MetroConfigKey.EnableInAppReview) &&
@@ -231,6 +260,40 @@ class RouteViewModel(
         }
     }
 
+    private fun routeAnalyticsParams(
+        viewType: String? = null,
+    ): Map<String, Any> {
+        val routeResult = _state.value.routeResultUi
+        return mutableMapOf<String, Any>(
+            AnalyticsParams.SOURCE_ID to routeScreenRoute.sourceId,
+            AnalyticsParams.DEST_ID to routeScreenRoute.destId,
+        ).apply {
+            routeResult?.let {
+                put(AnalyticsParams.SOURCE_NAME, it.sourceStation.name.value)
+                put(AnalyticsParams.DEST_NAME, it.destinationStation.name.value)
+                put(AnalyticsParams.STATIONS, it.stations)
+                put(AnalyticsParams.INTERCHANGES, it.interchanges)
+                put(AnalyticsParams.FARE, it.fare)
+            }
+            viewType?.let {
+                put(AnalyticsParams.VIEW_TYPE, it)
+            }
+        }
+    }
+
+    private fun logRouteEvent(
+        eventName: String,
+        viewType: String? = null,
+    ) {
+        viewModelScope.launch(Dispatchers.Default) {
+            FirebaseAnalyticsTracker.logEvent(
+                eventName = eventName,
+                screenName = ScreenName.ROUTE_SCREEN,
+                eventParams = routeAnalyticsParams(viewType)
+            )
+        }
+    }
+
     fun onAction(action: RouteScreenUiAction) {
         when (action) {
 
@@ -239,7 +302,14 @@ class RouteViewModel(
             }
 
             RouteScreenUiAction.ShareScreenShot -> {
-
+                logRouteEvent(
+                    eventName = AnalyticsEvents.ROUTE_SHARE_CLICKED,
+                    viewType = if (_state.value.isInterChangeFormatOpen) {
+                        ROUTE_VIEW_INTERCHANGE
+                    } else {
+                        ROUTE_VIEW_STATION_LIST
+                    }
+                )
             }
 
             RouteScreenUiAction.GoBack -> {
@@ -251,6 +321,12 @@ class RouteViewModel(
             }
 
             is RouteScreenUiAction.ToggleLiveLocation -> {
+                if (!isLiveLocationFeatureEnabled()) {
+                    _state.update {
+                        it.copy(isLiveLocationEnabled = false)
+                    }
+                    return
+                }
                 _state.update {
                     it.copy(
                         isLiveLocationEnabled = action.isEnabled
@@ -260,9 +336,12 @@ class RouteViewModel(
                     FirebaseAnalyticsTracker.logEvent(
                         eventName = if (action.isEnabled) AnalyticsEvents.LIVE_LOCATION_ENABLED else AnalyticsEvents.LIVE_LOCATION_DISABLED,
                         screenName = ScreenName.ROUTE_SCREEN,
-                        eventParams = mapOf(
-                            AnalyticsParams.SOURCE_ID to routeScreenRoute.sourceId,
-                            AnalyticsParams.DEST_ID to routeScreenRoute.destId,
+                        eventParams = routeAnalyticsParams(
+                            viewType = if (_state.value.isInterChangeFormatOpen) {
+                                ROUTE_VIEW_INTERCHANGE
+                            } else {
+                                ROUTE_VIEW_STATION_LIST
+                            }
                         )
                     )
                 }
@@ -280,9 +359,12 @@ class RouteViewModel(
                     FirebaseAnalyticsTracker.logEvent(
                         eventName = AnalyticsEvents.NOT_INSIDE_METRO_ERROR,
                         screenName = ScreenName.ROUTE_SCREEN,
-                        eventParams = mapOf(
-                            AnalyticsParams.SOURCE_ID to routeScreenRoute.sourceId,
-                            AnalyticsParams.DEST_ID to routeScreenRoute.destId,
+                        eventParams = routeAnalyticsParams(
+                            viewType = if (_state.value.isInterChangeFormatOpen) {
+                                ROUTE_VIEW_INTERCHANGE
+                            } else {
+                                ROUTE_VIEW_STATION_LIST
+                            }
                         )
                     )
                 }
@@ -290,11 +372,25 @@ class RouteViewModel(
             }
 
             RouteScreenUiAction.ToggleInterChangeFormat -> {
+                val nextIsInterchangeView = !_state.value.isInterChangeFormatOpen
                 _state.update { currentState ->
                     currentState.copy(
-                        isInterChangeFormatOpen = !currentState.isInterChangeFormatOpen
+                        isInterChangeFormatOpen = nextIsInterchangeView
                     )
                 }
+                val viewType = if (nextIsInterchangeView) {
+                    ROUTE_VIEW_INTERCHANGE
+                } else {
+                    ROUTE_VIEW_STATION_LIST
+                }
+                logRouteEvent(
+                    eventName = if (nextIsInterchangeView) {
+                        AnalyticsEvents.ROUTE_VIEW_INTERCHANGE
+                    } else {
+                        AnalyticsEvents.ROUTE_VIEW_STATION_LIST
+                    },
+                    viewType = viewType
+                )
             }
         }
     }
@@ -302,5 +398,7 @@ class RouteViewModel(
     companion object {
         private const val NOT_INSIDE_METRO_ERROR =
             "Live location starts only when you’re inside the metro"
+        private const val ROUTE_VIEW_INTERCHANGE = "interchange"
+        private const val ROUTE_VIEW_STATION_LIST = "station_list"
     }
 }
