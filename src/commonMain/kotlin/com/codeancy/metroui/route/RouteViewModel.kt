@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeancy.metroui.domain.models.LiveLocationUi
 import com.codeancy.metroui.domain.models.RouteResultUi
+import com.codeancy.metroui.domain.repository.NoRouteFoundException
 import com.codeancy.metroui.domain.repository.RouteRepository
 import com.codeancy.metroui.firebase.AnalyticsEvents
 import com.codeancy.metroui.firebase.AnalyticsParams
@@ -171,36 +172,62 @@ class RouteViewModel(
         }
         viewModelScope.launch(Dispatchers.IO) {
             val startTime = Clock.System.now()
-            val recentRouteResult = if (routeScreenRoute.isRecent) {
-                routeRepository.getRecentSearch(
-                    sourceId = routeScreenRoute.sourceId,
-                    destinationId = routeScreenRoute.destId
-                )
-            } else {
-                null
-            }
-            if (recentRouteResult != null) {
+            // Whole route-resolution block guarded: any failure here used to
+            // propagate up to the IO dispatcher's uncaught handler and kill
+            // the app (last seen as NoSuchElementException from .first() on
+            // an empty findRoutes() result for the agra flavor). Now we map
+            // known failures to a user-visible error state.
+            try {
+                val recentRouteResult = if (routeScreenRoute.isRecent) {
+                    routeRepository.getRecentSearch(
+                        sourceId = routeScreenRoute.sourceId,
+                        destinationId = routeScreenRoute.destId
+                    )
+                } else {
+                    null
+                }
+                if (recentRouteResult != null) {
+                    _state.update {
+                        it.copy(
+                            routeResultUi = recentRouteResult.routeResult,
+                            showProgress = false,
+                        )
+                    }
+                    if (!recentRouteResult.hasPlatformUpdated) {
+                        updatePlatFormDetails(recentRouteResult.routeResult)
+                    }
+                } else {
+                    val metroResult = routeRepository.getRoute(
+                        sourceId = routeScreenRoute.sourceId,
+                        destinationId = routeScreenRoute.destId
+                    )
+                    _state.update {
+                        it.copy(
+                            routeResultUi = metroResult,
+                            showProgress = false,
+                        )
+                    }
+                    updatePlatFormDetails(metroResult)
+                }
+            } catch (e: NoRouteFoundException) {
                 _state.update {
                     it.copy(
-                        routeResultUi = recentRouteResult.routeResult,
                         showProgress = false,
+                        showError = true,
+                        errorMessage = NO_ROUTE_FOUND_ERROR,
                     )
                 }
-                if (!recentRouteResult.hasPlatformUpdated) {
-                    updatePlatFormDetails(recentRouteResult.routeResult)
-                }
-            } else {
-                val metroResult = routeRepository.getRoute(
-                    sourceId = routeScreenRoute.sourceId,
-                    destinationId = routeScreenRoute.destId
-                )
+            } catch (t: Throwable) {
+                // Last-resort safety net — any other failure (DB read, proto
+                // decode, etc.) must NOT crash the app. Show a generic
+                // message and let the user back out.
                 _state.update {
                     it.copy(
-                        routeResultUi = metroResult,
                         showProgress = false,
+                        showError = true,
+                        errorMessage = GENERIC_ROUTE_ERROR,
                     )
                 }
-                updatePlatFormDetails(metroResult)
             }
             FirebaseAnalyticsTracker.logEvent(
                 eventName = AnalyticsEvents.ROUTE_LOAD_TIME,
@@ -398,6 +425,10 @@ class RouteViewModel(
     companion object {
         private const val NOT_INSIDE_METRO_ERROR =
             "Live location starts only when you’re inside the metro"
+        private const val NO_ROUTE_FOUND_ERROR =
+            "No route found between these stations. Please try a different pair."
+        private const val GENERIC_ROUTE_ERROR =
+            "Something went wrong while finding your route. Please try again."
         private const val ROUTE_VIEW_INTERCHANGE = "interchange"
         private const val ROUTE_VIEW_STATION_LIST = "station_list"
     }

@@ -114,6 +114,9 @@ fun HomeScreen(
 
         val uriHandler = LocalUriHandler.current
 
+        // Quick Access (Map / BookTicket / NearestMetro / Timings) is hidden for now.
+        // Re-enable by uncommenting the block below.
+        /*
         QuickAccess(
             modifier = Modifier
                 .fillMaxWidth()
@@ -148,6 +151,7 @@ fun HomeScreen(
                 }
             }
         }
+        */
 
         if (state.showFeedbackCard) {
 
