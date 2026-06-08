@@ -92,6 +92,13 @@ fun RouteScreen(
     val uriHandler = LocalUriHandler.current
     var showCallout by remember { mutableStateOf(false) }
 
+    LaunchedEffect(state.showInAppReview) {
+        if (state.showInAppReview) {
+            showInAppReview()
+            onAction(RouteScreenUiAction.InAppReviewShown)
+        }
+    }
+
     LaunchedEffect(state.showBookTicketTooltip) {
         if (state.showBookTicketTooltip) {
             showCallout = true
@@ -249,10 +256,6 @@ fun RouteScreen(
                     },
                     backgroundColor = MaterialTheme.colorScheme.error,
                 )
-            }
-
-            if (state.showInAppReview) {
-                showInAppReview()
             }
 
         }

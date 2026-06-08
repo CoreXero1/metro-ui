@@ -73,6 +73,8 @@ sealed interface RouteScreenUiAction {
     ) : RouteScreenUiAction
 
     data object ToggleInterChangeFormat : RouteScreenUiAction
+
+    data object InAppReviewShown : RouteScreenUiAction
 }
 
 @OptIn(ExperimentalTime::class)
@@ -374,6 +376,12 @@ class RouteViewModel(
                 }
             }
 
+
+            RouteScreenUiAction.InAppReviewShown -> {
+                _state.update { currentState ->
+                    currentState.copy(showInAppReview = false)
+                }
+            }
 
             RouteScreenUiAction.DismissError -> {
                 _state.update { currentState ->
