@@ -42,9 +42,11 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import com.codeancy.metroui.common.components.SnackBar
+import com.codeancy.metroui.common.utils.MetroConfig
 import com.codeancy.metroui.common.utils.MetroUiColor
 import com.codeancy.metroui.domain.models.LiveLocationUi
 import com.codeancy.metroui.domain.models.ifExistInThisInterChange
@@ -120,12 +122,21 @@ fun RouteScreen(
             )
 
             val routeResultUi = state.routeResultUi ?: run {
-                RouteScreenShimmer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                        .verticalScroll(rememberScrollState())
-                )
+                if (state.showError) {
+                    NoRouteFoundMessage(
+                        message = state.errorMessage,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp)
+                    )
+                } else {
+                    RouteScreenShimmer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .verticalScroll(rememberScrollState())
+                    )
+                }
                 return@Column
             }
 
@@ -246,41 +257,85 @@ fun RouteScreen(
 
         }
 
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(0.dp),
-        ) {
-            AnimatedVisibility(
-                visible = showCallout,
-                enter = fadeIn(tween(350)) + slideInVertically(tween(350)) { it },
-                exit = fadeOut(tween(250)) + slideOutVertically(tween(250)) { it },
+        if (MetroConfig.showBookTicket) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(0.dp),
             ) {
-                BookTicketCallout()
+                AnimatedVisibility(
+                    visible = showCallout,
+                    enter = fadeIn(tween(350)) + slideInVertically(tween(350)) { it },
+                    exit = fadeOut(tween(250)) + slideOutVertically(tween(250)) { it },
+                ) {
+                    BookTicketCallout()
+                }
+                FloatingActionButton(
+                    onClick = {
+                        showCallout = false
+                        try {
+                            uriHandler.openUri("https://wa.me/+919650855800?text=Hi")
+                        } catch (_: IllegalArgumentException) {
+                            onAction(RouteScreenUiAction.ShowNotInsideMetroError)
+                        } finally {
+                            FirebaseAnalyticsTracker.logEvent(
+                                eventName = AnalyticsEvents.BOOK_TICKET,
+                                screenName = ScreenName.ROUTE_SCREEN,
+                                eventParams = emptyMap()
+                            )
+                        }
+                    },
+                    containerColor = Color(0xFFDEFEE7),
+                ) {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.book_ticket),
+                        contentDescription = "Book Ticket via WhatsApp",
+                        tint = Color(0xFF16A34A)
+                    )
+                }
             }
-            FloatingActionButton(
-                onClick = {
-                    showCallout = false
-                    try {
-                        uriHandler.openUri("https://wa.me/+919650855800?text=Hi")
-                    } catch (_: IllegalArgumentException) {
-                        onAction(RouteScreenUiAction.ShowNotInsideMetroError)
-                    } finally {
-                        FirebaseAnalyticsTracker.logEvent(
-                            eventName = AnalyticsEvents.BOOK_TICKET,
-                            screenName = ScreenName.ROUTE_SCREEN,
-                            eventParams = emptyMap()
-                        )
-                    }
-                },
-                containerColor = Color(0xFFDEFEE7),
+        }
+    }
+}
+
+@Composable
+private fun NoRouteFoundMessage(
+    message: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MetroUiColor.componentCard.cardContainerColor
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Icon(
-                    imageVector = vectorResource(Res.drawable.book_ticket),
-                    contentDescription = "Book Ticket via WhatsApp",
-                    tint = Color(0xFF16A34A)
+                Text(
+                    text = "No route found",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MetroUiColor.onBackground,
+                )
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MetroUiColor.subHeading,
+                    textAlign = TextAlign.Center,
                 )
             }
         }

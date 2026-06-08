@@ -19,7 +19,12 @@ data class MetroConfiguration(
     val onCitySelected: (String) -> Unit = {},
     val showBookTicket: Boolean = true,
     val showNearestMetro: Boolean = true,
-    val showTimings: Boolean = true
+    val showTimings: Boolean = true,
+    // Build-time gate for the premium toolbar icon. Off for the AllIndia build,
+    // on for every other build. Kept here (not only in Remote Config) so the
+    // decision is deterministic and offline-safe instead of relying on a
+    // network-cached `app.id` condition.
+    val showPremium: Boolean = true
 )
 
 val LocalMetroConfiguration =

@@ -37,9 +37,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codeancy.metroui.common.utils.MetroConfig
+import com.codeancy.metroui.firebase.MetroConfigKey
 import indianmetro.metroui.generated.resources.Res
 import indianmetro.metroui.generated.resources.ic_premium
 import indianmetro.metroui.generated.resources.metro
+import org.corexero.sutradhar.remoteConfig.FirebaseRemoteConfig
 import org.jetbrains.compose.resources.vectorResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -148,7 +150,10 @@ fun HomeScreenHeader(
             }
         }
 
-        if (!MetroConfig.isPremiumUser) {
+        if (MetroConfig.showPremium &&
+            FirebaseRemoteConfig.getBoolean(MetroConfigKey.EnablePremium) &&
+            !MetroConfig.isPremiumUser
+        ) {
             Icon(
                 imageVector = vectorResource(Res.drawable.ic_premium),
                 contentDescription = null,

@@ -20,4 +20,9 @@ sealed class MetroConfigKey<T>(
         key = "ENABLE_AD",
         defaultValue = false
     )
+
+    data object EnablePremium : MetroConfigKey<Boolean>(
+        key = "ENABLE_PREMIUM",
+        defaultValue = false
+    )
 }
