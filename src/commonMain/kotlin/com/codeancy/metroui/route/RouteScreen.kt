@@ -58,6 +58,7 @@ import com.codeancy.metroui.route.components.LiveLocationSettingRow
 import com.codeancy.metroui.route.components.MetroRouteHeader
 import com.codeancy.metroui.route.components.MetroRouteStations
 import com.codeancy.metroui.route.components.MetroRouteSubInfo
+import com.codeancy.metroui.route.components.RouteMapActionCard
 import indianmetro.metroui.generated.resources.Res
 import indianmetro.metroui.generated.resources.book_ticket
 import kotlinx.coroutines.launch
@@ -81,6 +82,7 @@ fun RouteScreen(
     onAction: (RouteScreenUiAction) -> Unit,
     onShare: (ImageBitmap) -> Unit,
     showInAppReview: () -> Unit,
+    onViewOnMap: (() -> Unit)? = null,
 ) {
 
     LaunchedEffect(Unit) {
@@ -124,7 +126,12 @@ fun RouteScreen(
                         onShare(imageBitmap)
                     }
                 },
-                modifier = Modifier
+                onViewOnMap = if (onViewOnMap != null) {
+                    {
+                        onAction(RouteScreenUiAction.MapNudgeClicked)
+                        onViewOnMap()
+                    }
+                } else null,modifier = Modifier
                     .fillMaxWidth()
             )
 
@@ -176,6 +183,16 @@ fun RouteScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    if (onViewOnMap != null) {
+                        RouteMapActionCard(
+                            onViewOnMap = {
+                                onAction(RouteScreenUiAction.MapNudgeClicked)
+                                onViewOnMap()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
                     if (state.isInterChangeFormatOpen
                         && FirebaseRemoteConfig.getBoolean(LiveLocationConfigKey)
                     ) {
