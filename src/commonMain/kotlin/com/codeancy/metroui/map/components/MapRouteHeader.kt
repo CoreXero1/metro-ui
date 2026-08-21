@@ -1,6 +1,7 @@
 package com.codeancy.metroui.map.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -113,6 +114,14 @@ fun MapRouteHeader(
                         .padding(horizontal = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    val defaultGrey = Color(0xFF94A3B8)
+                    val sourceColor by animateColorAsState(
+                        sourceStation?.colorHex?.hexToColor(Color(0xFF2563EB)) ?: defaultGrey
+                    )
+                    val destinationColor by animateColorAsState(
+                        destinationStation?.colorHex?.hexToColor(Color(0xFF2563EB)) ?: defaultGrey
+                    )
+
                     // 1. Source Station Row
                     StationInputRow(
                         field = RouteField.SOURCE,
@@ -120,7 +129,7 @@ fun MapRouteHeader(
                         isActive = activeField == RouteField.SOURCE,
                         searchQuery = searchQuery,
                         placeholder = "Select departure station...",
-                        indicatorColor = Color(0xFF16A34A),
+                        indicatorColor = sourceColor,
                         onFocused = { onFieldFocused(RouteField.SOURCE) },
                         onQueryChanged = onQueryChanged,
                         onClear = { onClearField(RouteField.SOURCE) }
@@ -139,7 +148,7 @@ fun MapRouteHeader(
                         isActive = activeField == RouteField.DESTINATION,
                         searchQuery = searchQuery,
                         placeholder = "Select destination station...",
-                        indicatorColor = Color(0xFFDC2626),
+                        indicatorColor = destinationColor,
                         onFocused = { onFieldFocused(RouteField.DESTINATION) },
                         onQueryChanged = onQueryChanged,
                         onClear = { onClearField(RouteField.DESTINATION) }
