@@ -1,6 +1,7 @@
 package com.codeancy.metroui.domain.repository
 
 import com.codeancy.metroui.domain.models.LocationUi
+import com.codeancy.metroui.domain.models.MetroMapDataUi
 import com.codeancy.metroui.domain.models.NearestMetroStationUi
 import com.codeancy.metroui.domain.models.StationUi
 
@@ -16,5 +17,7 @@ interface StationRepository {
         source: StationUi,
         destination: StationUi
     ): Pair<String, String>?
+
+    suspend fun getMetroMapData(): MetroMapDataUi
 
 }

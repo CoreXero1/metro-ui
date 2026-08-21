@@ -80,6 +80,7 @@ data class RouteScreenRoute(
             routeScreenRoute: RouteScreenRoute,
             showInAppReview: () -> Unit,
             onNavigateUp: () -> Unit,
+            onNavigateToMap: ((Long, Long) -> Unit)? = null
         ) {
 
             val intentUtils = koinInject<IntentUtils>()
@@ -125,6 +126,11 @@ data class RouteScreenRoute(
                     }
                 },
                 onBack = onNavigateUp,
+                onViewOnMap = {
+                    state.routeResultUi?.let { route ->
+                        onNavigateToMap?.invoke(route.sourceStation.id, route.destinationStation.id)
+                    }
+                },
                 showInAppReview = {
                     showInAppReview()
                 },
@@ -148,7 +154,41 @@ data class RouteScreenRoute(
 }
 
 @Serializable
-data object MapScreenRoute
+data class MapScreenRoute(
+    val initialStationId: Long? = null,
+    val sourceId: Long? = null,
+    val destId: Long? = null
+) {
+    companion object {
+        @Composable
+        fun Invoke(
+            mapScreenRoute: MapScreenRoute = MapScreenRoute(),
+            onNavigateUp: () -> Unit,
+            onNavigateToRoute: (Long, Long) -> Unit
+        ) {
+            val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+            val mapViewModel: com.codeancy.metroui.map.MapViewModel = koinViewModel(
+                parameters = {
+                    parametersOf(mapScreenRoute)
+                }
+            )
+            val state by mapViewModel.state.collectAsStateWithLifecycle()
+
+            com.codeancy.metroui.map.MapScreen(
+                state = state,
+                onAction = mapViewModel::onAction,
+                onBack = onNavigateUp,
+                onNavigateToRoute = onNavigateToRoute,
+                onOpenExternalMap = { lat, lng, _ ->
+                    try {
+                        uriHandler.openUri("https://www.google.com/maps/search/?api=1&query=$lat,$lng")
+                    } catch (_: Exception) {
+                    }
+                }
+            )
+        }
+    }
+}
 
 
 @Serializable

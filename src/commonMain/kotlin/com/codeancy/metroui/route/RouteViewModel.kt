@@ -65,6 +65,7 @@ sealed interface RouteScreenUiAction {
     data object ShareScreenShot : RouteScreenUiAction
 
     data object DismissError : RouteScreenUiAction
+    data object MapNudgeClicked : RouteScreenUiAction
 
     data object ShowNotInsideMetroError : RouteScreenUiAction
 
@@ -386,6 +387,16 @@ class RouteViewModel(
             RouteScreenUiAction.DismissError -> {
                 _state.update { currentState ->
                     currentState.copy(showError = false)
+                }
+            }
+
+            RouteScreenUiAction.MapNudgeClicked -> {
+                viewModelScope.launch(Dispatchers.Default) {
+                    FirebaseAnalyticsTracker.logEvent(
+                        eventName = AnalyticsEvents.ROUTE_MAP_NUDGE_CLICKED,
+                        screenName = ScreenName.ROUTE_SCREEN,
+                        eventParams = routeAnalyticsParams()
+                    )
                 }
             }
 

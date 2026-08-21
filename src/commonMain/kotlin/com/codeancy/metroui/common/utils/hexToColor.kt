@@ -2,9 +2,9 @@ package com.codeancy.metroui.common.utils
 
 import androidx.compose.ui.graphics.Color
 
-fun String.hexToColor(): Color {
-    val cleanedHex = this.removePrefix("#")
-    val parsedHex = cleanedHex.toLong(16)
+fun String.hexToColor(defaultColor: Color = Color.Gray): Color {
+    val cleanedHex = this.removePrefix("#").trim()
+    val parsedHex = cleanedHex.toLongOrNull(16) ?: return defaultColor
 
     return when (cleanedHex.length) {
         6 -> Color(
@@ -21,6 +21,6 @@ fun String.hexToColor(): Color {
             blue = (parsedHex and 0xFF) / 255f
         )
 
-        else -> throw IllegalArgumentException("Invalid hex color format")
+        else -> defaultColor
     }
 }

@@ -2,11 +2,14 @@ package com.codeancy.metroui.route.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 fun MetroRouteHeader(
     onBack: () -> Unit,
     onShare: () -> Unit,
+    onViewOnMap: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -57,14 +61,29 @@ fun MetroRouteHeader(
                 .align(Alignment.Center)
         )
 
-        Icon(
-            imageVector = Icons.Default.Share,
-            contentDescription = null,
-            tint = MetroUiColor.onPrimaryColor,
-            modifier = Modifier
-                .clickable { onShare() }
-                .size(24.dp)
-                .align(Alignment.CenterEnd)
-        )
+        Row(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (onViewOnMap != null) {
+                Icon(
+                    imageVector = Icons.Default.Map,
+                    contentDescription = "View on Map",
+                    tint = MetroUiColor.onPrimaryColor,
+                    modifier = Modifier
+                        .clickable { onViewOnMap() }
+                        .size(24.dp)
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = "Share",
+                tint = MetroUiColor.onPrimaryColor,
+                modifier = Modifier
+                    .clickable { onShare() }
+                    .size(24.dp)
+            )
+        }
     }
 }

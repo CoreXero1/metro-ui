@@ -27,6 +27,7 @@ object AnalyticsEvents {
     const val ROUTE_SHARE_CLICKED = "route_share_clicked"
     const val ROUTE_VIEW_INTERCHANGE = "route_view_interchange"
     const val ROUTE_VIEW_STATION_LIST = "route_view_station_list"
+    const val ROUTE_MAP_NUDGE_CLICKED = "route_map_nudge_clicked"
 
 }
 

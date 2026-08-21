@@ -34,7 +34,7 @@ fun MetroNavigation(
             HomeScreenRoute.Invoke(
                 homeScreenRoute = it.toRoute(),
                 onNavigateToMapScreen = {
-                    navController.navigate(MapScreenRoute)
+                    navController.navigate(MapScreenRoute())
                 },
                 onNavigateToRouteScreen = { sourceId, destId, isRecent ->
                     navController.navigate(
@@ -58,24 +58,41 @@ fun MetroNavigation(
             RouteScreenRoute.Invoke(
                 showInAppReview = showInAppReview,
                 onNavigateUp = {
-                    if(adsController!=null){
+                    if (adsController != null) {
                         adsController.show {
                             navController.navigateUp()
                         }
-                    }else{
+                    } else {
                         navController.navigateUp()
                     }
+                },
+                onNavigateToMap = { sourceId, destId ->
+                    navController.navigate(
+                        MapScreenRoute(
+                            sourceId = sourceId,
+                            destId = destId
+                        )
+                    )
                 },
                 routeScreenRoute = it.toRoute()
             )
         }
 
-        composable<MapScreenRoute> {
-            Scaffold(
-                topBar = { MetroTopAppBar(onBack = { navController.popBackStack() }) })
-            {
-                MapScreen()
-            }
+        composable<MapScreenRoute> { it ->
+            MapScreenRoute.Invoke(
+                mapScreenRoute = it.toRoute(),
+                onNavigateUp = {
+                    navController.popBackStack()
+                },
+                onNavigateToRoute = { sourceId, destId ->
+                    navController.navigate(
+                        RouteScreenRoute(
+                            sourceId = sourceId,
+                            destId = destId
+                        )
+                    )
+                }
+            )
         }
 
         composable<PayrollScreenRoute> { it ->

@@ -40,7 +40,7 @@ fun App() {
                     }
 
                     Screen.Map -> {
-                        navController.navigate(MapScreenRoute)
+                        navController.navigate(MapScreenRoute())
                     }
 
                     Screen.RateUs -> {
