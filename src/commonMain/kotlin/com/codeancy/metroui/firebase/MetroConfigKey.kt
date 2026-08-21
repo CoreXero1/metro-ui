@@ -16,7 +16,7 @@ sealed class MetroConfigKey<T>(
         defaultValue = ""
     )
 
-    data object EnableAds: MetroConfigKey<Boolean>(
+    data object EnableAds : MetroConfigKey<Boolean>(
         key = "ENABLE_AD",
         defaultValue = false
     )
@@ -24,5 +24,10 @@ sealed class MetroConfigKey<T>(
     data object EnablePremium : MetroConfigKey<Boolean>(
         key = "ENABLE_PREMIUM",
         defaultValue = false
+    )
+
+    data object PopularStations : MetroConfigKey<String>(
+        key = "POPULAR_STATIONS",
+        defaultValue = "Rajiv Chowk,Kashmere Gate,Hauz Khas,Botanical Garden,Central Secretariat,IGI Airport,New Delhi,Noida Sector 52,Chandni Chowk,Anand Vihar"
     )
 }

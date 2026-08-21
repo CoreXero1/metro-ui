@@ -29,6 +29,9 @@ object AnalyticsEvents {
     const val ROUTE_VIEW_STATION_LIST = "route_view_station_list"
     const val ROUTE_MAP_NUDGE_CLICKED = "route_map_nudge_clicked"
 
+    // Station Chips
+    const val STATION_CHIP_CLICK = "station_chip_click"
+
     // Map Screen Conversion Funnel
     const val MAP_SOURCE_SELECT = "map_source_select"
     const val MAP_DEST_SELECT = "map_dest_select"
@@ -51,6 +54,10 @@ object AnalyticsParams {
     const val INTERCHANGES = "interchanges"
     const val FARE = "fare"
     const val ENTRY_SOURCE = "entry_source"
+    const val STATION_ID = "station_id"
+    const val STATION_NAME = "station_name"
+    const val CHIP_TYPE = "chip_type"
+    const val SELECTION_TARGET = "selection_target"
 }
 
 enum class ScreenName {

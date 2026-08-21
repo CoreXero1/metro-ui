@@ -31,8 +31,6 @@ import org.corexero.sutradhar.datastore.DataStoreKey
 import org.corexero.sutradhar.datastore.DataStoreManager
 import org.corexero.sutradhar.location.LocationRepository
 import org.corexero.sutradhar.network.repository.SutradharRepository
-import org.corexero.sutradhar.review.dto.FeedbackRequest
-import org.corexero.sutradhar.utils.platform
 
 class HomeViewModel(
     private val stationRepository: StationRepository,
@@ -49,11 +47,7 @@ class HomeViewModel(
         appConfigurationProvider.getAppConfiguration()
     }
 
-    private val _homeScreenState = MutableStateFlow(
-        HomeScreenState(
-            showFeedbackCard = homeScreenRoute.feedback
-        )
-    )
+    private val _homeScreenState = MutableStateFlow(HomeScreenState())
     val homeScreenState: StateFlow<HomeScreenState> = _homeScreenState
 
     private lateinit var allStationList: List<StationUi>
@@ -66,7 +60,6 @@ class HomeViewModel(
         initAppUpdate()
         initializeStationList()
         observeRecentSearches()
-        setUpLocalInitializer()
     }
 
     // Public action handler
@@ -98,7 +91,6 @@ class HomeViewModel(
 
             is HomeScreenUiAction.OnLastMetroChangeSource -> handleLastMetroChangeSource(action)
             is HomeScreenUiAction.OnLastMetroStationSwap -> handleLastMetroStationSwap()
-            is HomeScreenUiAction.OnSubmitFeedback -> handleOnSubmitFeedback(action)
             is HomeScreenUiAction.ShowError -> {
                 showErrorMessage(action.message)
             }
@@ -176,16 +168,6 @@ class HomeViewModel(
                         )
                     }
                 }
-        }
-    }
-
-    private fun setUpLocalInitializer() {
-        viewModelScope.launch {
-            _homeScreenState.update { currentState ->
-                currentState.copy(
-                    showFeedbackCard = dataStoreManager.getFirst(DataStoreKey.ShowUserFeedbackForm)
-                )
-            }
         }
     }
 
@@ -706,40 +688,6 @@ class HomeViewModel(
             screenName = ScreenName.HOME_SCREEN,
             eventParams = mapOf(AnalyticsParams.ERROR to !success)
         )
-    }
-
-    private fun handleOnSubmitFeedback(action: HomeScreenUiAction.OnSubmitFeedback) {
-        viewModelScope.launch {
-            val request = FeedbackRequest(
-                productId = appConfiguration.productId,
-                feedback = action.feedback,
-                rating = action.rating,
-                platform = platform.toString(),
-                topics = action.topics,
-                userIdentifier = action.email,
-                userAgent = appConfiguration.platformUserAgent,
-                appId = appConfiguration.packageName
-            )
-
-            val result = sutradharRepository.saveUserFeedback(request)
-
-            result.onSuccess { env ->
-                val msg = env.message ?: "Feedback submitted successfully"
-                _homeScreenState.update { currentState ->
-                    currentState.copy(
-                        showError = true,
-                        errorMessage = msg,
-                        showFeedbackCard = false
-                    )
-                }
-                dataStoreManager.put(DataStoreKey.ShowUserFeedbackForm, false)
-            }.onFailure { e ->
-                _homeScreenState.value = _homeScreenState.value.copy(
-                    showError = true,
-                    errorMessage = e.message ?: "Failed to submit feedback"
-                )
-            }
-        }
     }
 
 }

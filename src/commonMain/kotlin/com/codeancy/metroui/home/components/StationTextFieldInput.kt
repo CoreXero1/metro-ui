@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenuItem
@@ -65,10 +66,11 @@ fun StationTextFieldInput(
     stations: List<StationUi>,
     onSelectStation: (StationUi?) -> Unit,
     hintText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    onNextIme: (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
-    val focusRequester = remember { FocusRequester() }
 
     var isFocused by remember {
         mutableStateOf(false)
@@ -101,6 +103,14 @@ fun StationTextFieldInput(
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = if (isSource) ImeAction.Next else ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    onNextIme?.invoke() ?: focusManager.moveFocus(FocusDirection.Next)
+                },
+                onDone = {
+                    focusManager.clearFocus(true)
+                }
             ),
             cursorBrush = Brush.linearGradient(
                 listOf(
@@ -177,7 +187,10 @@ fun StationTextFieldInput(
             fuzzyMatchSubstring(value.text, stations)
         }
 
-        AnimatedVisibility(isFocused && filteredStationUis.isNotEmpty()) {
+        val shouldShowDropdown = isFocused && filteredStationUis.isNotEmpty() &&
+            !(filteredStationUis.size == 1 && filteredStationUis.first().name.value.equals(value.text, ignoreCase = true))
+
+        AnimatedVisibility(shouldShowDropdown) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -189,7 +202,7 @@ fun StationTextFieldInput(
                         onClick = {
                             onSelectStation(stationUi)
                             if (isSource) {
-                                focusManager.moveFocus(FocusDirection.Next)
+                                onNextIme?.invoke() ?: focusManager.moveFocus(FocusDirection.Next)
                             } else {
                                 focusManager.clearFocus(true)
                             }

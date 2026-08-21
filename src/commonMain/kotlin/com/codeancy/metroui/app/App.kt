@@ -32,7 +32,7 @@ fun App() {
             deepLinkNavigator.deepsLinks.collect { screen ->
                 when (screen) {
                     Screen.AskForFeedback -> {
-                        navController.navigate(HomeScreenRoute(feedback = true))
+                        showInAppReview.show()
                     }
 
                     Screen.Home -> {

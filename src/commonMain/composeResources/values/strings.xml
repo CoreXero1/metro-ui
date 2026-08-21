@@ -58,6 +58,8 @@
     <string name="stations">Stations</string>
     <string name="interchanges">Interchanges</string>
     <string name="to">To</string>
+    <string name="route_view_interchanges">Interchanges</string>
+    <string name="route_view_all_stations">All Stations</string>
 
     <!--   // Route Location Steps Strings-->
     <string name="live_location">Live location</string>
@@ -76,33 +78,4 @@
     <string name="show_all_station">Show All Stations</string>
     <string name="hide_all_station">Hide All Stations</string>
     <string name="platform_no">Platform No. %1$s</string>
-
-
-    <!-- FeedBack form-->
-    <string name="share_feedback_title">Share Feedback</string>
-    <string name="share_feedback_subtitle">Help us improve your experience</string>
-    <string name="share_feedback_description">Rate your experience and suggest improvements</string>
-
-    <string name="feedback_title">Share Your Feedback</string>
-    <string name="feedback_rate_q">How would you rate your experience?</string>
-    <string name="feedback_rate_hint">Tap a star to rate</string>
-    <string name="feedback_topic_q">What would you like to share feedback about?</string>
-    <string name="feedback_more_q">Tell us more</string>
-    <string name="feedback_email_q">Email</string>
-
-
-    <string name="feedback_cat_design">App Design</string>
-    <string name="feedback_cat_features">Features</string>
-    <string name="feedback_cat_perf">Performance</string>
-    <string name="feedback_cat_other">Other</string>
-
-
-    <string name="feedback_more_hint">Share your thoughts, suggestions, or report any issues...</string>
-    <string name="feedback_email_hint">your@email.com</string>
-
-    <string name="feedback_btn_cancel">Cancel</string>
-    <string name="feedback_btn_submit">Submit Feedback</string>
-    <string name="feedback_subtitle">Help us make Metro App better for everyone</string>
-    <string name="feedback_more_helper">Your feedback helps us improve the app for everyone</string>
-    <string name="feedback_email_helper">We&apos;ll only contact you if we need more details</string>
 </resources>

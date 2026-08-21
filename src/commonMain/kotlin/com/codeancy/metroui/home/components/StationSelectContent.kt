@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -33,7 +35,9 @@ fun StationSelectContent(
     onSourceStationSelected: (StationUi?) -> Unit,
     onDestinationStationSelected: (StationUi?) -> Unit,
     onSwap: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    sourceFocusRequester: FocusRequester = remember { FocusRequester() },
+    destinationFocusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     Box(
         modifier = modifier
@@ -46,7 +50,16 @@ fun StationSelectContent(
                 value = source,
                 stations = allStations,
                 onValueChange = onSourceChanged,
-                onSelectStation = onSourceStationSelected,
+                onSelectStation = { station ->
+                    onSourceStationSelected(station)
+                    if (station != null) {
+                        destinationFocusRequester.requestFocus()
+                    }
+                },
+                focusRequester = sourceFocusRequester,
+                onNextIme = {
+                    destinationFocusRequester.requestFocus()
+                },
                 isSource = true,
                 hintText = stringResource(Res.string.from_station),
                 modifier = Modifier
@@ -58,6 +71,7 @@ fun StationSelectContent(
                 stations = allStations,
                 onValueChange = onDestinationChanged,
                 onSelectStation = onDestinationStationSelected,
+                focusRequester = destinationFocusRequester,
                 isSource = false,
                 hintText = stringResource(Res.string.to_station),
                 modifier = Modifier

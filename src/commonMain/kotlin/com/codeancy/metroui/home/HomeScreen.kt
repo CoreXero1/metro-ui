@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import com.codeancy.metroui.common.components.FeedBackCard
 import com.codeancy.metroui.common.components.SnackBar
 import com.codeancy.metroui.common.components.StatusBarColor
 import com.codeancy.metroui.common.utils.MetroUiColor
@@ -106,6 +105,7 @@ fun HomeScreen(
             onDestinationStationSelected = {
                 onAction(HomeScreenUiAction.OnSelectDestination(it))
             },
+            recentRouteResults = state.recentRouteResults,
             modifier = Modifier
                 .padding(horizontal = 12.dp)
         )
@@ -149,18 +149,6 @@ fun HomeScreen(
             }
         }
 
-        if (state.showFeedbackCard) {
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            FeedBackCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                onSubmitFeedback = onAction
-            )
-
-        }
 
 
         NearestMetro(

@@ -17,7 +17,6 @@ data class HomeScreenState(
     val showProgress: Boolean = false,
     val showError: Boolean = false,
     val errorMessage: String = "",
-    val showFeedbackCard: Boolean = true,
     val recentRouteResults: List<RouteResultUi> = emptyList(),
     val nearestMetroState: NearestMetroState? = null,
     val lastMetroTimingState: LastMetroTimingState? = null,

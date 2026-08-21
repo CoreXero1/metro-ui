@@ -59,13 +59,6 @@ sealed interface HomeScreenUiAction {
 
     data object OnDismissLastMetroTiming : HomeScreenUiAction
 
-    data class OnSubmitFeedback(
-        val rating: Int,
-        val topics: Set<String>,
-        val feedback: String,
-        val email: String,
-    ) : HomeScreenUiAction
-
     data class ShowError(
         val message: String
     ) : HomeScreenUiAction
