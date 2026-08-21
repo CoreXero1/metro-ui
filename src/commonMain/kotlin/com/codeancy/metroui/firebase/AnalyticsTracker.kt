@@ -29,6 +29,12 @@ object AnalyticsEvents {
     const val ROUTE_VIEW_STATION_LIST = "route_view_station_list"
     const val ROUTE_MAP_NUDGE_CLICKED = "route_map_nudge_clicked"
 
+    // Map Screen Conversion Funnel
+    const val MAP_SOURCE_SELECT = "map_source_select"
+    const val MAP_DEST_SELECT = "map_dest_select"
+    const val MAP_GET_ROUTE = "map_get_route"
+    const val MAP_VIEW_ROUTE_DETAILS = "map_view_route_details"
+
 }
 
 object AnalyticsParams {
@@ -44,11 +50,13 @@ object AnalyticsParams {
     const val STATIONS = "stations"
     const val INTERCHANGES = "interchanges"
     const val FARE = "fare"
+    const val ENTRY_SOURCE = "entry_source"
 }
 
 enum class ScreenName {
     HOME_SCREEN,
-    ROUTE_SCREEN
+    ROUTE_SCREEN,
+    MAP_SCREEN
 }
 
 fun FirebaseAnalyticsTracker.logEvent(

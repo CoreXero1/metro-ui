@@ -125,7 +125,7 @@ fun MapScreen(
                 onSwapStations = { onAction(MapUiAction.SwapSourceAndDestination) },
                 onClearField = { onAction(MapUiAction.ClearRouteField(it)) },
                 onClearRoute = { onAction(MapUiAction.ClearRouteOverlay) },
-                onViewRouteDetails = { srcId, dstId -> onNavigateToRoute(srcId, dstId) },
+                onViewRouteDetails = { srcId, dstId -> onAction(MapUiAction.ViewRouteDetails(srcId, dstId)) },
                 onBack = onBack,
                 modifier = Modifier
                     .fillMaxWidth()

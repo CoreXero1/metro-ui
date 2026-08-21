@@ -69,6 +69,7 @@ sealed interface MapUiAction {
     data class SetAsSource(val station: MapStationUi) : MapUiAction
     data class SetAsDestination(val station: MapStationUi) : MapUiAction
     data class OpenDirections(val station: MapStationUi) : MapUiAction
+    data class ViewRouteDetails(val sourceId: Long, val destId: Long) : MapUiAction
     data object ResetFocusTarget : MapUiAction
     data object ConsumeNavigationEvent : MapUiAction
 }
@@ -103,6 +104,7 @@ class MapViewModel(
             is MapUiAction.SetAsSource -> handleSetAsSource(action.station)
             is MapUiAction.SetAsDestination -> handleSetAsDestination(action.station)
             is MapUiAction.OpenDirections -> handleOpenDirections(action.station)
+            is MapUiAction.ViewRouteDetails -> handleViewRouteDetails(action.sourceId, action.destId)
             MapUiAction.ResetFocusTarget -> _state.update { it.copy(focusTarget = null) }
             MapUiAction.ConsumeNavigationEvent -> _state.update { it.copy(navigationEvent = null) }
         }
@@ -152,6 +154,7 @@ class MapViewModel(
 
         if (station != null) {
             if (currentActiveField == RouteField.SOURCE) {
+                logSourceSelected(station)
                 _state.update {
                     it.copy(
                         sourceStation = station,
@@ -164,6 +167,7 @@ class MapViewModel(
                 checkAndCalculateRoute()
                 return
             } else if (currentActiveField == RouteField.DESTINATION) {
+                logDestSelected(station)
                 _state.update {
                     it.copy(
                         destinationStation = station,
@@ -182,6 +186,7 @@ class MapViewModel(
             val currentDest = _state.value.destinationStation
 
             if (currentSource == null) {
+                logSourceSelected(station)
                 _state.update {
                     it.copy(
                         sourceStation = station,
@@ -191,6 +196,7 @@ class MapViewModel(
                 }
                 loadStationTimings(station)
             } else if (currentDest == null && currentSource.id != station.id) {
+                logDestSelected(station)
                 _state.update {
                     it.copy(
                         destinationStation = station,
@@ -283,6 +289,7 @@ class MapViewModel(
     private fun handleSelectSearchResult(station: MapStationUi) {
         val field = _state.value.activeRouteField
         if (field == RouteField.SOURCE) {
+            logSourceSelected(station)
             _state.update {
                 it.copy(
                     sourceStation = station,
@@ -294,6 +301,7 @@ class MapViewModel(
             }
             checkAndCalculateRoute()
         } else if (field == RouteField.DESTINATION) {
+            logDestSelected(station)
             _state.update {
                 it.copy(
                     destinationStation = station,
@@ -383,6 +391,18 @@ class MapViewModel(
                     allRouteStationIds.add(ic.destinationStation.id)
                 }
 
+                FirebaseAnalyticsTracker.logEvent(
+                    eventName = AnalyticsEvents.MAP_GET_ROUTE,
+                    screenName = ScreenName.MAP_SCREEN,
+                    eventParams = mapOf(
+                        AnalyticsParams.SOURCE_ID to sourceId,
+                        AnalyticsParams.DEST_ID to destinationId,
+                        AnalyticsParams.STATIONS to routeResult.stations,
+                        AnalyticsParams.INTERCHANGES to routeResult.interchanges,
+                        AnalyticsParams.FARE to routeResult.fare
+                    )
+                )
+
                 _state.update {
                     it.copy(
                         routeOverlay = allRouteStationIds,
@@ -434,6 +454,7 @@ class MapViewModel(
     }
 
     private fun handleSetAsSource(station: MapStationUi) {
+        logSourceSelected(station)
         _state.update {
             it.copy(
                 sourceStation = station,
@@ -444,6 +465,7 @@ class MapViewModel(
     }
 
     private fun handleSetAsDestination(station: MapStationUi) {
+        logDestSelected(station)
         _state.update {
             it.copy(
                 destinationStation = station,
@@ -467,11 +489,59 @@ class MapViewModel(
         }
     }
 
+    private fun handleViewRouteDetails(sourceId: Long, destId: Long) {
+        FirebaseAnalyticsTracker.logEvent(
+            eventName = AnalyticsEvents.MAP_VIEW_ROUTE_DETAILS,
+            screenName = ScreenName.MAP_SCREEN,
+            eventParams = mapOf(
+                AnalyticsParams.SOURCE_ID to sourceId,
+                AnalyticsParams.DEST_ID to destId
+            )
+        )
+        _state.update {
+            it.copy(
+                navigationEvent = MapNavigationEvent.NavigateToRoute(sourceId, destId)
+            )
+        }
+    }
+
+    private fun logSourceSelected(station: MapStationUi) {
+        FirebaseAnalyticsTracker.logEvent(
+            eventName = AnalyticsEvents.MAP_SOURCE_SELECT,
+            screenName = ScreenName.MAP_SCREEN,
+            eventParams = mapOf(
+                AnalyticsParams.SOURCE_ID to station.id,
+                AnalyticsParams.SOURCE_NAME to station.name
+            )
+        )
+    }
+
+    private fun logDestSelected(station: MapStationUi) {
+        FirebaseAnalyticsTracker.logEvent(
+            eventName = AnalyticsEvents.MAP_DEST_SELECT,
+            screenName = ScreenName.MAP_SCREEN,
+            eventParams = mapOf(
+                AnalyticsParams.DEST_ID to station.id,
+                AnalyticsParams.DEST_NAME to station.name
+            )
+        )
+    }
+
     private fun logMapScreenVisit() {
+        val entrySource = if (mapScreenRoute.sourceId != null && mapScreenRoute.destId != null) {
+            "route_nudge"
+        } else if (mapScreenRoute.initialStationId != null) {
+            "station_action"
+        } else {
+            "home_quick_action"
+        }
+
         FirebaseAnalyticsTracker.logEvent(
             eventName = AnalyticsEvents.METRO_MAP,
-            screenName = ScreenName.HOME_SCREEN,
-            eventParams = emptyMap()
+            screenName = ScreenName.MAP_SCREEN,
+            eventParams = mapOf(
+                AnalyticsParams.ENTRY_SOURCE to entrySource
+            )
         )
     }
 }
