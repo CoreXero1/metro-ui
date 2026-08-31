@@ -19,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -154,16 +155,33 @@ fun HomeScreenHeader(
             FirebaseRemoteConfig.getBoolean(MetroConfigKey.EnablePremium) &&
             !MetroConfig.isPremiumUser
         ) {
-            Icon(
-                imageVector = vectorResource(Res.drawable.ic_premium),
-                contentDescription = null,
-                tint = Color.Yellow,
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFFFFD700).copy(alpha = 0.2f),
+                border = BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.7f)),
                 modifier = Modifier
-                    .size(20.dp)
-                    .clickable {
-                        onPremiumClicked()
-                    }
-            )
+                    .clickable { onPremiumClicked() }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.ic_premium),
+                        contentDescription = "Upgrade to Pro",
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "PRO",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    )
+                }
+            }
         }
 
     }

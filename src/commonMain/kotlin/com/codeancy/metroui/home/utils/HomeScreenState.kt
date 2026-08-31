@@ -20,7 +20,8 @@ data class HomeScreenState(
     val recentRouteResults: List<RouteResultUi> = emptyList(),
     val nearestMetroState: NearestMetroState? = null,
     val lastMetroTimingState: LastMetroTimingState? = null,
-    val appUpdateUi: AppUpdateUi? = null
+    val appUpdateUi: AppUpdateUi? = null,
+    val showPaywallSheet: Boolean = false
 ) {
 
     sealed interface NearestMetroState {

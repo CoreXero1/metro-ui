@@ -45,12 +45,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Surface
 import com.codeancy.metroui.common.components.SnackBar
 import com.codeancy.metroui.common.utils.MetroConfig
 import com.codeancy.metroui.common.utils.MetroUiColor
 import com.codeancy.metroui.domain.models.LiveLocationUi
 import com.codeancy.metroui.domain.models.ifExistInThisInterChange
 import com.codeancy.metroui.firebase.AnalyticsEvents
+import com.codeancy.metroui.firebase.MetroConfigKey
 import com.codeancy.metroui.firebase.ScreenName
 import com.codeancy.metroui.firebase.logEvent
 import com.codeancy.metroui.route.components.InterchangeRoute
@@ -59,6 +68,7 @@ import com.codeancy.metroui.route.components.MetroRouteHeader
 import com.codeancy.metroui.route.components.MetroRouteStations
 import com.codeancy.metroui.route.components.MetroRouteSubInfo
 import com.codeancy.metroui.route.components.RouteMapActionCard
+import com.corexero.dhan_tantra.sdk.presentation.PaywallBottomSheet
 import indianmetro.metroui.generated.resources.Res
 import indianmetro.metroui.generated.resources.book_ticket
 import kotlinx.coroutines.launch
@@ -93,6 +103,7 @@ fun RouteScreen(
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
     var showCallout by remember { mutableStateOf(false) }
+    var showPaywallSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.showInAppReview) {
         if (state.showInAppReview) {
@@ -191,6 +202,59 @@ fun RouteScreen(
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
+                    }
+
+                    if (MetroConfig.showPremium &&
+                        !MetroConfig.isPremiumUser &&
+                        FirebaseRemoteConfig.getBoolean(MetroConfigKey.EnablePremium)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    FirebaseAnalyticsTracker.logEvent(
+                                        eventName = AnalyticsEvents.PREMIUM,
+                                        screenName = ScreenName.ROUTE_SCREEN
+                                    )
+                                    showPaywallSheet = true
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        text = "Go 100% Ad-Free",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                Text(
+                                    text = "Remove Ads →",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                     }
 
                     if (state.isInterChangeFormatOpen
@@ -316,6 +380,12 @@ fun RouteScreen(
                     )
                 }
             }
+        }
+
+        if (showPaywallSheet) {
+            PaywallBottomSheet(
+                onDismiss = { showPaywallSheet = false }
+            )
         }
     }
 }

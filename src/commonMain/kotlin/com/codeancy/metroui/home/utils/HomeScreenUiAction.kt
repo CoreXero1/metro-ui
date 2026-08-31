@@ -68,5 +68,6 @@ sealed interface HomeScreenUiAction {
     ) : HomeScreenUiAction
 
     data object OnPremiumClick : HomeScreenUiAction
+    data object DismissPaywall : HomeScreenUiAction
 
 }

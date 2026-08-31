@@ -59,8 +59,14 @@ fun MetroNavigation(
                 showInAppReview = showInAppReview,
                 onNavigateUp = {
                     if (adsController != null) {
-                        adsController.show {
-                            navController.navigateUp()
+                        adsController.showWithResult { adShown ->
+                            if (adShown) {
+                                navController.navigate(HomeScreenRoute(openPaywallOnLaunch = true)) {
+                                    popUpTo<HomeScreenRoute> { inclusive = true }
+                                }
+                            } else {
+                                navController.navigateUp()
+                            }
                         }
                     } else {
                         navController.navigateUp()

@@ -35,7 +35,11 @@ import com.codeancy.metroui.home.components.rememberHardUpdateModel
 import com.codeancy.metroui.home.components.rememberSoftUpdateModel
 import com.codeancy.metroui.home.utils.HomeScreenState
 import com.codeancy.metroui.home.utils.HomeScreenUiAction
+import com.codeancy.metroui.firebase.MetroConfigKey
+import com.corexero.dhan_tantra.sdk.presentation.PaywallBottomSheet
 import com.corexero.dhan_tantra.sdk.presentation.PayrollScreen
+import com.corexero.dhan_tantra.sdk.presentation.PremiumInlineCard
+import org.corexero.sutradhar.remoteConfig.FirebaseRemoteConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,6 +113,21 @@ fun HomeScreen(
             modifier = Modifier
                 .padding(horizontal = 12.dp)
         )
+
+        if (MetroConfig.showPremium &&
+            FirebaseRemoteConfig.getBoolean(MetroConfigKey.EnablePremium) &&
+            !MetroConfig.isPremiumUser
+        ) {
+            Spacer(modifier = Modifier.height(14.dp))
+            PremiumInlineCard(
+                onUpgradeClick = {
+                    onAction(HomeScreenUiAction.OnPremiumClick)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -225,5 +244,13 @@ fun HomeScreen(
             onAction(HomeScreenUiAction.DismissError)
         },
     )
+
+    if (state.showPaywallSheet) {
+        PaywallBottomSheet(
+            onDismiss = {
+                onAction(HomeScreenUiAction.DismissPaywall)
+            }
+        )
+    }
 
 }

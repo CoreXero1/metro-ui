@@ -26,6 +26,7 @@ import org.koin.core.parameter.parametersOf
 @Serializable
 data class HomeScreenRoute(
     val feedback: Boolean = false,
+    val openPaywallOnLaunch: Boolean = false,
 ) {
 
     companion object {
@@ -44,6 +45,12 @@ data class HomeScreenRoute(
                 }
             )
 
+            LaunchedEffect(homeScreenRoute.openPaywallOnLaunch) {
+                if (homeScreenRoute.openPaywallOnLaunch) {
+                    homeViewModel.onAction(HomeScreenUiAction.OnPremiumClick)
+                }
+            }
+
             HomeScreen(
                 state = homeViewModel.homeScreenState.collectAsStateWithLifecycle().value,
                 onAction = {
@@ -56,7 +63,6 @@ data class HomeScreenRoute(
                         )
 
                         is HomeScreenUiAction.OnMetroMapClick -> onNavigateToMapScreen()
-                        is HomeScreenUiAction.OnPremiumClick -> onNavigateToPremium()
                         else -> Unit
                     }
                 }
