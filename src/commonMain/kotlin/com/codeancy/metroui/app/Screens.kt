@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.codeancy.metroui.common.utils.IntentUtils
 import com.codeancy.metroui.common.utils.MetroConfig
 import com.codeancy.metroui.domain.models.LiveLocationUi
+import com.codeancy.metroui.firebase.AnalyticsEntrySource
 import com.codeancy.metroui.home.HomeScreen
 import com.codeancy.metroui.home.HomeViewModel
 import com.codeancy.metroui.home.utils.HomeScreenUiAction
@@ -47,7 +48,7 @@ data class HomeScreenRoute(
 
             LaunchedEffect(homeScreenRoute.openPaywallOnLaunch) {
                 if (homeScreenRoute.openPaywallOnLaunch) {
-                    homeViewModel.onAction(HomeScreenUiAction.OnPremiumClick)
+                    homeViewModel.onAction(HomeScreenUiAction.OnPremiumClick(AnalyticsEntrySource.AD_DISMISSED))
                 }
             }
 

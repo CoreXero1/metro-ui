@@ -104,16 +104,22 @@ class HomeViewModel(
             is HomeScreenUiAction.OnSelectDestination -> handleDestinationStationSelect(action)
 
             is HomeScreenUiAction.OnSelectSource -> handleSourceStationSelect(action)
-            HomeScreenUiAction.OnPremiumClick -> handlePremiumClick()
+            is HomeScreenUiAction.OnPremiumClick -> handlePremiumClick(action)
             HomeScreenUiAction.DismissPaywall -> handleDismissPaywall()
         }
     }
 
-    private fun handlePremiumClick() {
-        _homeScreenState.update { it.copy(showPaywallSheet = true) }
+    private fun handlePremiumClick(action: HomeScreenUiAction.OnPremiumClick) {
+        _homeScreenState.update {
+            it.copy(
+                showPaywallSheet = true,
+                paywallEntrySource = action.entrySource
+            )
+        }
         FirebaseAnalyticsTracker.logEvent(
             eventName = AnalyticsEvents.PREMIUM,
             screenName = ScreenName.HOME_SCREEN,
+            eventParams = mapOf(AnalyticsParams.ENTRY_SOURCE to action.entrySource)
         )
     }
 

@@ -21,7 +21,8 @@ data class HomeScreenState(
     val nearestMetroState: NearestMetroState? = null,
     val lastMetroTimingState: LastMetroTimingState? = null,
     val appUpdateUi: AppUpdateUi? = null,
-    val showPaywallSheet: Boolean = false
+    val showPaywallSheet: Boolean = false,
+    val paywallEntrySource: String = "home_header"
 ) {
 
     sealed interface NearestMetroState {

@@ -35,10 +35,14 @@ import com.codeancy.metroui.home.components.rememberHardUpdateModel
 import com.codeancy.metroui.home.components.rememberSoftUpdateModel
 import com.codeancy.metroui.home.utils.HomeScreenState
 import com.codeancy.metroui.home.utils.HomeScreenUiAction
+import com.codeancy.metroui.firebase.AnalyticsEntrySource
 import com.codeancy.metroui.firebase.MetroConfigKey
+import com.codeancy.metroui.firebase.ScreenName
+import com.codeancy.metroui.firebase.logEvent
 import com.corexero.dhan_tantra.sdk.presentation.PaywallBottomSheet
 import com.corexero.dhan_tantra.sdk.presentation.PayrollScreen
 import com.corexero.dhan_tantra.sdk.presentation.PremiumInlineCard
+import org.corexero.sutradhar.analytics.FirebaseAnalyticsTracker
 import org.corexero.sutradhar.remoteConfig.FirebaseRemoteConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +70,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxWidth(),
             onPremiumClicked = {
-                onAction(HomeScreenUiAction.OnPremiumClick)
+                onAction(HomeScreenUiAction.OnPremiumClick(AnalyticsEntrySource.HOME_HEADER))
             }
         )
 
@@ -121,7 +125,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(14.dp))
             PremiumInlineCard(
                 onUpgradeClick = {
-                    onAction(HomeScreenUiAction.OnPremiumClick)
+                    onAction(HomeScreenUiAction.OnPremiumClick(AnalyticsEntrySource.HOME_INLINE_CARD))
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -249,6 +253,14 @@ fun HomeScreen(
         PaywallBottomSheet(
             onDismiss = {
                 onAction(HomeScreenUiAction.DismissPaywall)
+            },
+            entrySource = state.paywallEntrySource,
+            onAnalyticsEvent = { eventName, params ->
+                FirebaseAnalyticsTracker.logEvent(
+                    eventName = eventName,
+                    screenName = ScreenName.HOME_SCREEN,
+                    eventParams = params
+                )
             }
         )
     }

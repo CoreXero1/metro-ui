@@ -58,7 +58,9 @@ import com.codeancy.metroui.common.utils.MetroConfig
 import com.codeancy.metroui.common.utils.MetroUiColor
 import com.codeancy.metroui.domain.models.LiveLocationUi
 import com.codeancy.metroui.domain.models.ifExistInThisInterChange
+import com.codeancy.metroui.firebase.AnalyticsEntrySource
 import com.codeancy.metroui.firebase.AnalyticsEvents
+import com.codeancy.metroui.firebase.AnalyticsParams
 import com.codeancy.metroui.firebase.MetroConfigKey
 import com.codeancy.metroui.firebase.ScreenName
 import com.codeancy.metroui.firebase.logEvent
@@ -217,7 +219,8 @@ fun RouteScreen(
                                 .clickable {
                                     FirebaseAnalyticsTracker.logEvent(
                                         eventName = AnalyticsEvents.PREMIUM,
-                                        screenName = ScreenName.ROUTE_SCREEN
+                                        screenName = ScreenName.ROUTE_SCREEN,
+                                        eventParams = mapOf(AnalyticsParams.ENTRY_SOURCE to AnalyticsEntrySource.ROUTE_BANNER)
                                     )
                                     showPaywallSheet = true
                                 }
@@ -384,7 +387,15 @@ fun RouteScreen(
 
         if (showPaywallSheet) {
             PaywallBottomSheet(
-                onDismiss = { showPaywallSheet = false }
+                onDismiss = { showPaywallSheet = false },
+                entrySource = AnalyticsEntrySource.ROUTE_BANNER,
+                onAnalyticsEvent = { eventName, params ->
+                    FirebaseAnalyticsTracker.logEvent(
+                        eventName = eventName,
+                        screenName = ScreenName.ROUTE_SCREEN,
+                        eventParams = params
+                    )
+                }
             )
         }
     }

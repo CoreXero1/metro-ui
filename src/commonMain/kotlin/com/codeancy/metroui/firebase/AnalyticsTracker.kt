@@ -29,6 +29,20 @@ object AnalyticsEvents {
     const val ROUTE_VIEW_STATION_LIST = "route_view_station_list"
     const val ROUTE_MAP_NUDGE_CLICKED = "route_map_nudge_clicked"
 
+    // Monetization & Purchase Revamp Funnel
+    const val PAYWALL_IMPRESSION = "paywall_impression"
+    const val PACKAGE_SELECTED = "package_selected"
+    const val PURCHASE_INITIATED = "purchase_initiated"
+    const val PURCHASE_SUCCESS = "purchase_success"
+    const val PURCHASE_FAILED = "purchase_failed"
+    const val RESTORE_PURCHASE_INITIATED = "restore_purchase_initiated"
+    const val RESTORE_PURCHASE_SUCCESS = "restore_purchase_success"
+    const val RESTORE_PURCHASE_FAILED = "restore_purchase_failed"
+
+    // Search Funnel
+    const val SEARCH_INITIATED = "search_initiated"
+    const val SEARCH_RESULT_SELECTED = "search_result_selected"
+
     // Station Chips
     const val STATION_CHIP_CLICK = "station_chip_click"
 
@@ -58,6 +72,21 @@ object AnalyticsParams {
     const val STATION_NAME = "station_name"
     const val CHIP_TYPE = "chip_type"
     const val SELECTION_TARGET = "selection_target"
+    const val PACKAGE_ID = "package_id"
+    const val PACKAGE_TYPE = "package_type"
+    const val PRICE = "price"
+    const val CURRENCY = "currency"
+    const val USER_CANCELLED = "user_cancelled"
+}
+
+object AnalyticsEntrySource {
+    const val HOME_HEADER = "home_header"
+    const val HOME_INLINE_CARD = "home_inline_card"
+    const val ROUTE_BANNER = "route_banner"
+    const val AD_DISMISSED = "ad_dismissed"
+    const val MAP_QUICK_ACTION = "home_quick_action"
+    const val ROUTE_NUDGE = "route_nudge"
+    const val STATION_ACTION = "station_action"
 }
 
 enum class ScreenName {

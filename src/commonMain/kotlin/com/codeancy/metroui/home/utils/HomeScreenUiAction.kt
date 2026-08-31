@@ -67,7 +67,7 @@ sealed interface HomeScreenUiAction {
         val appUpdateUi: AppUpdateUi
     ) : HomeScreenUiAction
 
-    data object OnPremiumClick : HomeScreenUiAction
+    data class OnPremiumClick(val entrySource: String = "home_header") : HomeScreenUiAction
     data object DismissPaywall : HomeScreenUiAction
 
 }
